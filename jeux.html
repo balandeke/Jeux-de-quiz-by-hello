@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Culture Générale</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            color: gold;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        #start-button {
+            background-color: gold;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #start-button:hover {
+            background-color: #d4af37;
+        }
+
+        #question-container {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        #question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #question-number {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        #timer {
+            font-size: 1.2em;
+            color: #d9534f; /* Couleur rouge pour attirer l'attention */
+        }
+
+        #question {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        #answer-input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            width: 80%;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        #submit-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #submit-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #result-container {
+            display: none;
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        #final-score {
+            margin-bottom: 10px;
+        }
+
+        #replay-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        #replay-button:hover {
+            background-color: #0056b3;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quiz de Culture Générale</h1>
+        <button id="start-button">Commencer</button>
+
+        <div id="question-container">
+            <div id="question-header">
+                <h2 id="question-number">Question 1</h2>
+                <div id="timer">Temps restant: 10</div>
+            </div>
+            <p id="question"></p>
+            <input type="text" id="answer-input" placeholder="Votre réponse">
+            <button id="submit-button">Valider</button>
+        </div>
+
+        <div id="result-container">
+            <h2>Résultats</h2>
+            <p id="final-score"></p>
+            <button id="replay-button">Rejouer</button>
+        </div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('start-button');
+        const questionContainer = document.getElementById('question-container');
+        const questionNumberDisplay = document.getElementById('question-number');
+        const questionDisplay = document.getElementById('question');
+        const answerInput = document.getElementById('answer-input');
+        const submitButton = document.getElementById('submit-button');
+        const resultContainer = document.getElementById('result-container');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const replayButton = document.getElementById('replay-button');
+        const container = document.querySelector('.container');
+        const timerDisplay = document.getElementById('timer');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [
+            { question: "Quelle est la capitale de la France ?", answer: "Paris" },
+            { question: "Quel est le plus grand océan du monde ?", answer: "Pacifique" },
+            { question: "Combien de continents y a-t-il sur Terre ?", answer: "7" },
+            { question: "Quel est le symbole chimique de l'eau ?", answer: "H2O" },
+            { question: "Qui a peint la Joconde ?", answer: "Léonard de Vinci" },
+            { question: "Quelle est la monnaie du Japon ?", answer: "Yen" },
+            { question: "Quel est le plus haut sommet du monde ?", answer: "Mont Everest" },
+            { question: "En quelle année a débuté la Première Guerre mondiale ?", answer: "1914" },
+            { question: "Quel est le plus grand désert du monde (hors Antarctique) ?", answer: "Sahara" },
+            { question: "Quel est le nom du premier homme à avoir marché sur la Lune ?", answer: "Neil Armstrong" },
+            { question: "Quelle est la capitale de l'Australie ?", answer: "Canberra" },
+            { question: "Quel est le symbole chimique de l'or ?", answer: "Au" },
+            { question: "Qui a écrit Roméo et Juliette ?", answer: "William Shakespeare" },
+            { question: "Quel est le fleuve le plus long du monde ?", answer: "Amazone" },
+            { question: "Quel est le nom de la planète rouge ?", answer: "Mars" },
+            { question: "En quelle année la Seconde Guerre mondiale a-t-elle pris fin ?", answer: "1945" },
+            { question: "Quelle est la capitale du Canada ?", answer: "Ottawa" },
+            { question: "Quel est le plus grand animal terrestre ?", answer: "Éléphant d'Afrique" },
+            { question: "Qui a découvert la pénicilline ?", answer: "Alexander Fleming" },
+            { question: "Quelle est la langue la plus parlée au monde (en nombre de locuteurs natifs) ?", answer: "Chinois mandarin" }
+        ];
+        let timerInterval;
+        let timeLeft = 10; // Réduction du temps à 10 secondes
+
+        function startQuiz() {
+            startButton.style.display = 'none';
+            questionContainer.style.display = 'block';
+            showQuestion();
+            questionContainer.classList.add('fade-in');
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                questionNumberDisplay.textContent = `Question ${currentQuestionIndex + 1}`;
+                questionDisplay.textContent = questions[currentQuestionIndex].question;
+                answerInput.value = '';
+                const randomColor = getRandomColor();
+                container.style.backgroundColor = randomColor;
+                startTimer();
+            } else {
+                endQuiz();
+            }
+        }
+
+        function startTimer() {
+            timeLeft = 10; // Réinitialiser le temps à 10 secondes
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    currentQuestionIndex++;
+                    showQuestion();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            timerDisplay.textContent = `Temps restant: ${timeLeft}`;
+            if (timeLeft <= 3) { // Rendre le rouge plus visible à la fin
+                timerDisplay.style.color = 'red';
+            } else {
+                timerDisplay.style.color = '#d9534f';
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = questions[currentQuestionIndex].answer.toLowerCase();
+
+            clearInterval(timerInterval);
+
+            if (userAnswer === correctAnswer) {
+                score++;
+            }
+
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            questionContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+            finalScoreDisplay.textContent = `Votre score final est de ${score} sur ${questions.length}.`;
+            resultContainer.classList.add('fade-in');
+            container.style.backgroundColor = '#fff';
+        }
+
+        function replayQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultContainer.style.display = 'none';
+            startButton.style.display = 'block';
+            timeLeft = 10; // Réinitialiser le temps
+            updateTimerDisplay();
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        startButton.addEventListener('click', () => {
+            startButton.classList.add('fade-out');
+            setTimeout(() => {
+                startButton.classList.remove('fade-out');
+                startQuiz();
+            }, 300);
+        });
+
+        const styleSheet = document.createElement("style");
+        styleSheet.type = "text/css";
+        styleSheet.innerText = `
+            .fade-out {
+                animation: fadeOut 0.3s ease-in-out;
+            }
+
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        submitButton.addEventListener('click', checkAnswer);
+
+        answerInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        replayButton.addEventListener('click', replayQuiz);
+    </script>
+</body>
+</html>
